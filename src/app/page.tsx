@@ -32,6 +32,17 @@ export default function Home() {
     setTitle('');
   };
 
+  const markAsCompleted = async (id: number) => {
+    const res = await fetch(`/api/todos/${id}`, { method: 'PATCH' });
+    const updated = await res.json();
+    setTodos(todos.map((todo) => (todo.id === id ? updated : todo)));
+  };
+
+  const deleteTodo = async (id: number) => {
+    await fetch(`/api/todos/${id}`, { method: 'DELETE' });
+    setTodos(todos.filter((todo) => todo.id !== id));
+  };
+
   return (
     <main className="p-4">
       <h1 className="text-2xl font-bold">Todo List</h1>
@@ -53,9 +64,29 @@ export default function Home() {
         {todos.map((todo) => (
           <li
             key={todo.id}
-            className="border-b py-2"
+            className="border-b py-2 flex justify-between items-center"
           >
-            {todo.title}
+            <span
+              className={todo.completed ? 'line-through text-gray-500' : ''}
+            >
+              {todo.title}
+            </span>
+            <div className="flex gap-2">
+              {!todo.completed && (
+                <button
+                  onClick={() => markAsCompleted(todo.id)}
+                  className="text-green-600 text-sm"
+                >
+                  ✔ Done
+                </button>
+              )}
+              <button
+                onClick={() => deleteTodo(todo.id)}
+                className="text-red-500 text-sm"
+              >
+                ✖ Delete
+              </button>
+            </div>
           </li>
         ))}
       </ul>
