@@ -1,5 +1,4 @@
 'use client';
-import { resolveSoa } from 'dns';
 import { useEffect, useState } from 'react';
 
 type Todo = {
@@ -88,14 +87,17 @@ export default function Home() {
         >
           Add
         </button>
-        {todos.some((todo) => todo.completed) && (
-          <button
-            onClick={deleteCompletedTodos}
-            className="bg-red-500 text-white px-4 py-1 rounded"
-          >
-            🗑 Clear Done
-          </button>
-        )}
+        <button
+          onClick={deleteCompletedTodos}
+          className={`px-4 py-1 rounded ${
+            todos.some((todo) => todo.completed)
+              ? 'bg-red-500 text-white'
+              : 'bg-gray-700 text-gray-500 cursor-not-allowed'
+          }`}
+          disabled={!todos.some((todo) => todo.completed)}
+        >
+          🗑 Clear Done
+        </button>
       </div>
       <ul>
         {todos.map((todo) => (
