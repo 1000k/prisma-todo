@@ -67,10 +67,15 @@ export default function Home() {
     cancelEditing();
   };
 
+  const deleteCompletedTodos = async () => {
+    await fetch('/api/todos/completed', { method: 'DELETE' });
+    setTodos(todos.filter((todo) => !todo.completed));
+  };
+
   return (
     <main className="p-4">
       <h1 className="text-2xl font-bold">Todo List</h1>
-      <div className="my-4">
+      <div className="my-4 flex space-x-2">
         <input
           className="border px-2 py-1 mr-2"
           value={title}
@@ -83,6 +88,14 @@ export default function Home() {
         >
           Add
         </button>
+        {todos.some((todo) => todo.completed) && (
+          <button
+            onClick={deleteCompletedTodos}
+            className="bg-red-500 text-white px-4 py-1 rounded"
+          >
+            🗑 Clear Done
+          </button>
+        )}
       </div>
       <ul>
         {todos.map((todo) => (
