@@ -1,4 +1,3 @@
-// app/page.tsx
 'use client';
 import { useEffect, useState } from 'react';
 
@@ -12,6 +11,8 @@ type Todo = {
 export default function Home() {
   const [todos, setTodos] = useState<Todo[]>([]);
   const [title, setTitle] = useState('');
+  const [editingId, setEditingId] = useState<number | null>(null);
+  const [editTitle, setEditTitle] = useState('');
 
   useEffect(() => {
     fetch('/api/todos')
@@ -43,6 +44,28 @@ export default function Home() {
     setTodos(todos.filter((todo) => todo.id !== id));
   };
 
+  const startEditing = (todo: Todo) => {
+    setEditingId(todo.id);
+    setEditTitle(todo.title);
+  };
+
+  const cancelEditing = () => {
+    setEditingId(null);
+    setEditTitle('');
+  };
+
+  const saveTitle = async (id: number) => {
+    const res = await fetch(`/api/todos/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify({ title: editTitle }),
+      headers: { 'Content-Type': 'application/json' },
+    });
+
+    const updated = await res.json();
+    setTodos(todos.map((todo) => (todo.id === id ? updated : todo)));
+    cancelEditing();
+  };
+
   return (
     <main className="p-4">
       <h1 className="text-2xl font-bold">Todo List</h1>
@@ -66,27 +89,61 @@ export default function Home() {
             key={todo.id}
             className="border-b py-2 flex justify-between items-center"
           >
-            <span
-              className={todo.completed ? 'line-through text-gray-500' : ''}
-            >
-              {todo.title}
-            </span>
-            <div className="flex gap-2">
-              {!todo.completed && (
-                <button
-                  onClick={() => markAsCompleted(todo.id)}
-                  className="text-green-600 text-sm"
+            {editingId === todo.id ? (
+              <>
+                <input
+                  className="border px-2 py-1 mr-2 flex-1"
+                  value={editTitle}
+                  onChange={(e) => setEditTitle(e.target.value)}
+                />
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => saveTitle(todo.id)}
+                    className="text-blue-600 text-sm"
+                  >
+                    💾 Save
+                  </button>
+                  <button
+                    onClick={cancelEditing}
+                    className="text-gray-500 text-sm"
+                  >
+                    ✖ Cancel
+                  </button>
+                </div>
+              </>
+            ) : (
+              <>
+                <span
+                  className={`flex-1 ${
+                    todo.completed ? 'line-through text-gray-500' : ''
+                  }`}
                 >
-                  ✔ Done
-                </button>
-              )}
-              <button
-                onClick={() => deleteTodo(todo.id)}
-                className="text-red-500 text-sm"
-              >
-                ✖ Delete
-              </button>
-            </div>
+                  {todo.title}
+                </span>
+                <div className="flex gap-2">
+                  {!todo.completed && (
+                    <button
+                      onClick={() => markAsCompleted(todo.id)}
+                      className="text-green-600 text-sm"
+                    >
+                      ✔ Done
+                    </button>
+                  )}
+                  <button
+                    onClick={() => startEditing(todo)}
+                    className="text-blue-500 text-sm"
+                  >
+                    ✏ Edit
+                  </button>
+                  <button
+                    onClick={() => deleteTodo(todo.id)}
+                    className="text-red-500 text-sm"
+                  >
+                    ✖ Delete
+                  </button>
+                </div>
+              </>
+            )}
           </li>
         ))}
       </ul>
