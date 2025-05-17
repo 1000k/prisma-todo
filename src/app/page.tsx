@@ -1,4 +1,5 @@
 'use client';
+import { resolveSoa } from 'dns';
 import { useEffect, useState } from 'react';
 
 type Todo = {
@@ -33,7 +34,7 @@ export default function Home() {
     setTitle('');
   };
 
-  const markAsCompleted = async (id: number) => {
+  const toggleComplete = async (id: number) => {
     const res = await fetch(`/api/todos/${id}`, { method: 'PATCH' });
     const updated = await res.json();
     setTodos(todos.map((todo) => (todo.id === id ? updated : todo)));
@@ -121,14 +122,14 @@ export default function Home() {
                   {todo.title}
                 </span>
                 <div className="flex gap-2">
-                  {!todo.completed && (
-                    <button
-                      onClick={() => markAsCompleted(todo.id)}
-                      className="text-green-600 text-sm"
-                    >
-                      ✔ Done
-                    </button>
-                  )}
+                  <button
+                    onClick={() => toggleComplete(todo.id)}
+                    className={`text-sm ${
+                      todo.completed ? 'text-yellow-500' : 'text-green-600'
+                    }`}
+                  >
+                    {todo.completed ? '↩ Undo' : '✔ Done'}
+                  </button>
                   <button
                     onClick={() => startEditing(todo)}
                     className="text-blue-500 text-sm"
